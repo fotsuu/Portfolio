@@ -57,7 +57,7 @@ window.handleFormSubmit = function handleFormSubmit(e) {
   btn.disabled = true;
   btn.style.opacity = '0.7';
 
-  // Direct AJAX Submission via FormSubmit (No Outlook required)
+  // Direct AJAX Submission via FormSubmit with Styled Box Email UI
   fetch('https://formsubmit.co/ajax/diamanteeric0501@gmail.com', {
     method: 'POST',
     headers: { 
@@ -65,11 +65,14 @@ window.handleFormSubmit = function handleFormSubmit(e) {
       'Accept': 'application/json'
     },
     body: JSON.stringify({
-      name: name,
-      email: email,
-      message: message,
-      _subject: `New Portfolio Inquiry from ${name} (${email})`,
-      _captcha: 'false'
+      _subject: `📩 Portfolio Inquiry from ${name}`,
+      _template: 'box',
+      _captcha: 'false',
+      '👤 Sender Name / Organization': name,
+      '📧 Sender Email Address': email,
+      '💬 Inquiry Message': message,
+      '🌐 Portfolio Website Source': 'Eric.dev Portfolio (https://fotsuu.github.io/Portfolio/)',
+      '📅 Sent Date & Time': new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })
     })
   })
   .then(res => res.json())
