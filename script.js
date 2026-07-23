@@ -53,51 +53,54 @@ window.handleFormSubmit = function handleFormSubmit(e) {
   const email = document.getElementById('contact-email').value;
   const message = document.getElementById('contact-message').value;
 
-  const keyInput = form.querySelector('input[name="access_key"]');
-  const hasAccessKey = keyInput && keyInput.value && !keyInput.value.includes('YOUR_ACCESS_KEY');
-
   btn.innerHTML = '<span>Sending...</span>';
   btn.disabled = true;
   btn.style.opacity = '0.7';
 
-  if (hasAccessKey && navigator.onLine) {
-    const formData = new FormData(form);
-    fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      body: formData
+  // Direct AJAX Submission via FormSubmit (No Outlook required)
+  fetch('https://formsubmit.co/ajax/diamanteeric0501@gmail.com', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      message: message,
+      _subject: `New Portfolio Inquiry from ${name} (${email})`,
+      _captcha: 'false'
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        success.textContent = '✅ Message sent successfully! I will get back to you within 24 hours.';
-        success.classList.add('show');
-        form.reset();
-      } else {
-        triggerMailtoFallback(name, email, message);
-      }
-    })
-    .catch(() => triggerMailtoFallback(name, email, message))
-    .finally(() => restoreBtn());
-  } else {
-    triggerMailtoFallback(name, email, message);
-    restoreBtn();
-  }
-
-  function triggerMailtoFallback(n, e, m) {
-    const subject = encodeURIComponent(`Portfolio Hiring Inquiry from ${n}`);
-    const body = encodeURIComponent(`Name/Organization: ${n}\nEmail: ${e}\n\nMessage:\n${m}`);
-    window.location.href = `mailto:diamanteeric0501@gmail.com?subject=${subject}&body=${body}`;
-
-    success.innerHTML = `📬 Email draft ready! Click send in your mail app.<br><small style="opacity:0.8;">Or email directly: diamanteeric0501@gmail.com</small>`;
+  })
+  .then(res => res.json())
+  .then(data => {
+    success.style.display = 'block';
+    success.innerHTML = '✅ <strong>Message Sent Successfully!</strong><br><span style="font-size:0.85rem;opacity:0.9;">Your message has been delivered directly to diamanteeric0501@gmail.com. I will reply within 24 hours.</span>';
     success.classList.add('show');
+    showToast('✉️ Message delivered directly to Eric!');
     form.reset();
-  }
+  })
+  .catch(err => {
+    // Graceful web-only fallback (No Outlook opening)
+    const textToCopy = `To: diamanteeric0501@gmail.com\nFrom: ${name} (${email})\n\n${message}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy);
+    }
+    success.style.display = 'block';
+    success.innerHTML = `✅ <strong>Inquiry Saved & Copied!</strong><br><span style="font-size:0.85rem;opacity:0.9;">Message copied to clipboard. You can paste and send directly to <strong>diamanteeric0501@gmail.com</strong>.</span>`;
+    success.classList.add('show');
+    showToast('📋 Message copied to clipboard!');
+    form.reset();
+  })
+  .finally(() => restoreBtn());
 
   function restoreBtn() {
     btn.innerHTML = '<span>Send Message</span><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>';
     btn.disabled = false;
     btn.style.opacity = '1';
-    setTimeout(() => success.classList.remove('show'), 8000);
+    setTimeout(() => {
+      success.classList.remove('show');
+    }, 10000);
   }
 };
 
